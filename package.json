@@ -6,7 +6,7 @@
   "scripts": {
     "start": "ts-node src/server.ts",
     "build": "npm install && tsc",
-    "serve": "node dist/index.js"
+    "serve": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
