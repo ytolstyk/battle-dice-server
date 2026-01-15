@@ -3,6 +3,8 @@ import * as http from "http";
 import { Server } from "socket.io";
 import { socketHandler } from "./socketHandler";
 
+const PORT = 8080;
+
 const app = express();
 
 // Create an HTTP server instance using the Express app
@@ -17,8 +19,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
   },
 });
-
-const PORT = 8080;
 
 app.get("/", (_req, res) => {
   res.send("<h1>Hey you - use API stuff</h1>");
