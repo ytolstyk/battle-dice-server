@@ -1,80 +1,133 @@
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { store } from "./store";
 import { ConnectingUser, Roll } from "./types";
+import { logMessage } from "./logger";
 
 export const socketHandler = (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) => {
-  console.log("Socket handler initialized");
+  logMessage("Socket handler initialized");
+
   io.on(
     "connection",
     (
       socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
     ) => {
-      console.log("a user connected");
+      logMessage("[connection] a user connected");
 
-      const createRoom = (roomId: string, user: ConnectingUser) => {
-        store.createRoom(roomId, user, socket.id);
+      const joinRoom = ({
+        roomId,
+        user,
+      }: {
+        roomId: string;
+        user: ConnectingUser;
+      }) => {
+        logMessage(
+          `[joinRoom] roomId: ${roomId}, user: ${user.id} ${user.name}`
+        );
+
+        const room = store.addUserToRoom(user, roomId, socket.id);
         socket.join(roomId);
-
-        console.log(`Room ${roomId} created by user ${user.name}`);
-
-        socket.to(roomId).emit("roomCreated", store.state.rooms[roomId]);
-      };
-
-      const joinRoom = (roomId: string, user: ConnectingUser) => {
-        store.addUserToRoom(user, roomId, socket.id);
-        socket.join(roomId);
-
-        console.log(`User ${user.name} joined room ${roomId}`);
-
-        socket.to(roomId).emit("userJoined", store.state.rooms[roomId]);
-      };
-
-      const leaveRoom = (roomId: string, user: ConnectingUser) => {
-        store.removeUser(user, roomId, socket.id);
         store.pruneRooms();
 
-        console.log(`User ${user.name} left room ${roomId}`);
+        logMessage(`User ${user.name} joined room ${roomId}`);
 
-        socket.to(roomId).emit("userLeft", store.state.rooms[roomId]);
+        socket.emit("roomUpdated", room);
+      };
+
+      const leaveRoom = ({
+        roomId,
+        userId,
+      }: {
+        roomId: string;
+        userId: string;
+      }) => {
+        logMessage(`[leaveRoom] roomId: ${roomId}, userId: ${userId}`);
+
+        const room = store.removeUser(userId, roomId, socket.id);
+        store.pruneRooms();
+
+        logMessage(`User ${userId} left room ${roomId}`);
+
+        socket.emit("roomUpdated", room);
         socket.leave(roomId);
       };
 
-      const rollDice = (roomId: string, userId: string) => {
-        const room = store.updateUserStatus(roomId, userId, "rolling");
-        socket.to(roomId).emit("diceRolled", room);
+      const updateDiceRules = ({
+        roomId,
+        userId,
+        diceRules,
+      }: {
+        roomId: string;
+        userId: string;
+        diceRules: string;
+      }) => {
+        logMessage(
+          `[updateDiceRules] roomId: ${roomId}, userId: ${userId}, diceRules: ${diceRules}`
+        );
 
-        console.log(`User ${userId} rolled dice in room ${roomId}`);
+        const room = store.updateDiceRules(roomId, userId, diceRules);
+
+        socket.emit("diceRulesUpdated", room);
+
+        logMessage(`Dice rules updated in room ${roomId}`);
       };
 
-      const transmitRollResult = (
-        roomId: string,
-        userId: string,
-        rollResult: Roll
-      ) => {
+      const rollDice = ({
+        roomId,
+        userId,
+      }: {
+        roomId: string;
+        userId: string;
+      }) => {
+        logMessage(`[rollDice] roomId: ${roomId}, userId: ${userId}`);
+
+        const room = store.updateUserStatus(roomId, userId, "rolling");
+        socket.emit("diceRolled", room);
+
+        logMessage(`User ${userId} rolled dice in room ${roomId}`);
+      };
+
+      const updateUserRollResult = ({
+        roomId,
+        userId,
+        rollResult,
+      }: {
+        roomId: string;
+        userId: string;
+        rollResult: Roll;
+      }) => {
+        logMessage(
+          `[updateUserRollResult] roomId: ${roomId}, userId: ${userId}, rollResult: ${rollResult}`
+        );
+
         const room = store.updateUserRoll(roomId, userId, rollResult);
 
-        socket.to(roomId).emit("rollResult", room);
+        socket.emit("rollResult", room);
 
-        console.log(`Transmitted roll result to room ${roomId}`);
+        logMessage(`Transmitted roll result to room ${roomId}`);
       };
 
-      socket.on("createRoom", createRoom);
+      const disconnect = () => () => {
+        logMessage(`[disconnect] socketId: ${socket.id}`);
+
+        store.disconnectUser(socket.id);
+        store.pruneRooms();
+
+        logMessage("user disconnected");
+      };
 
       socket.on("joinRoom", joinRoom);
 
       socket.on("leaveRoom", leaveRoom);
 
+      socket.on("updateDiceRules", updateDiceRules);
+
       socket.on("rollDice", rollDice);
 
-      socket.on("transmitRollResult", transmitRollResult);
+      socket.on("updateUserRollResult", updateUserRollResult);
 
-      socket.on("disconnect", () => {
-        store.disconnectUser(socket.id);
-        store.pruneRooms();
-        console.log("user disconnected");
-      });
+      socket.on("disconnect", disconnect);
     }
   );
 };
