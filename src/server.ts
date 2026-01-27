@@ -3,13 +3,16 @@ import { socketHandler } from "./socketHandler";
 
 const PORT = 8080;
 
+const origin =
+  process.env.NODE_ENV === "production"
+    ? ["https://main.d2wj3ci2d6hgbv.amplifyapp.com/"]
+    : ["http://localhost:5173"];
+
 const io = new Server({
   path: "/battle-dice/",
   serveClient: false,
   cors: {
-    // Configure CORS for Socket.IO if your client is on a different origin
-    origin: ["*", "http://localhost:5173"],
-    // origin: false,
+    origin,
     methods: ["GET", "POST"],
   },
 });
