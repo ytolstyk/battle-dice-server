@@ -5,7 +5,11 @@ const PORT = 8080;
 
 const origin =
   process.env.NODE_ENV === "production"
-    ? ["https://main.d2wj3ci2d6hgbv.amplifyapp.com/"]
+    ? [
+        "https://main.d2wj3ci2d6hgbv.amplifyapp.com",
+        "http://main.d2wj3ci2d6hgbv.amplifyapp.com:80",
+        "https://main.d2wj3ci2d6hgbv.amplifyapp.com:433",
+      ]
     : ["http://localhost:5173"];
 
 const io = new Server({
