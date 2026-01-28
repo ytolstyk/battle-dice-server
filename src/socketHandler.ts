@@ -4,14 +4,14 @@ import { ConnectingUser, Roll } from "./types";
 import { logMessage } from "./logger";
 
 export const socketHandler = (
-  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
 ) => {
   logMessage("Socket handler initialized");
 
   io.on(
     "connection",
     (
-      socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+      socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
     ) => {
       logMessage("[connection] a user connected");
 
@@ -23,7 +23,7 @@ export const socketHandler = (
         user: ConnectingUser;
       }) => {
         logMessage(
-          `[joinRoom] roomId: ${roomId}, user: ${user.id} ${user.name}`
+          `[joinRoom] roomId: ${roomId}, user: ${user.id} ${user.name}`,
         );
 
         const room = store.addUserToRoom(user, roomId, socket.id);
@@ -32,7 +32,7 @@ export const socketHandler = (
 
         logMessage(`User ${user.name} joined room ${roomId}`);
 
-        socket.emit("roomUpdated", room);
+        io.to(roomId).emit("roomUpdated", room);
       };
 
       const leaveRoom = ({
@@ -49,7 +49,7 @@ export const socketHandler = (
 
         logMessage(`User ${userId} left room ${roomId}`);
 
-        socket.emit("roomUpdated", room);
+        io.to(roomId).emit("roomUpdated", room);
         socket.leave(roomId);
       };
 
@@ -63,12 +63,12 @@ export const socketHandler = (
         diceRules: string;
       }) => {
         logMessage(
-          `[updateDiceRules] roomId: ${roomId}, userId: ${userId}, diceRules: ${diceRules}`
+          `[updateDiceRules] roomId: ${roomId}, userId: ${userId}, diceRules: ${diceRules}`,
         );
 
         const room = store.updateDiceRules(roomId, userId, diceRules);
 
-        socket.emit("diceRulesUpdated", room);
+        io.to(roomId).emit("diceRulesUpdated", room);
 
         logMessage(`Dice rules updated in room ${roomId}`);
       };
@@ -83,7 +83,7 @@ export const socketHandler = (
         logMessage(`[rollDice] roomId: ${roomId}, userId: ${userId}`);
 
         const room = store.updateUserStatus(roomId, userId, "rolling");
-        socket.emit("diceRolled", room);
+        io.to(roomId).emit("diceRolled", room);
 
         logMessage(`User ${userId} rolled dice in room ${roomId}`);
       };
@@ -98,12 +98,32 @@ export const socketHandler = (
         rollResult: Roll;
       }) => {
         logMessage(
-          `[updateUserRollResult] roomId: ${roomId}, userId: ${userId}, rollResult: ${rollResult}`
+          `[updateUserRollResult] roomId: ${roomId}, userId: ${userId}, rollResult: ${rollResult}`,
         );
 
         const room = store.updateUserRoll(roomId, userId, rollResult);
 
-        socket.emit("rollResult", room);
+        io.to(roomId).emit("rollResult", room);
+
+        logMessage(`Transmitted roll result to room ${roomId}`);
+      };
+
+      const updateUserName = ({
+        roomId,
+        userId,
+        userName,
+      }: {
+        roomId: string;
+        userId: string;
+        userName: string;
+      }) => {
+        logMessage(
+          `[updateUserName] roomId: ${roomId}, userId: ${userId}, userName: ${userName}`,
+        );
+
+        const room = store.updateUserName(roomId, userId, userName);
+
+        io.to(roomId).emit("userNameUpdated", room);
 
         logMessage(`Transmitted roll result to room ${roomId}`);
       };
@@ -111,8 +131,14 @@ export const socketHandler = (
       const disconnect = () => () => {
         logMessage(`[disconnect] socketId: ${socket.id}`);
 
-        store.disconnectUser(socket.id);
+        const roomInfo = store.disconnectUser(socket.id);
+
         store.pruneRooms();
+
+        if (roomInfo) {
+          io.to(roomInfo.roomId).emit("roomUpdated", roomInfo.room);
+          socket.leave(roomInfo.roomId);
+        }
 
         logMessage("user disconnected");
       };
@@ -127,7 +153,9 @@ export const socketHandler = (
 
       socket.on("updateUserRollResult", updateUserRollResult);
 
+      socket.on("updateUserName", updateUserName);
+
       socket.on("disconnect", disconnect);
-    }
+    },
   );
 };

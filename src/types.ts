@@ -14,7 +14,7 @@ export type ConnectingUser = {
 };
 
 export type User = ConnectingUser & {
-  status: "connected" | "disconnected" | "rolling";
+  status: "connected" | "disconnected" | "rolling" | "hasRolled";
   roll: Roll;
 };
 
@@ -27,8 +27,11 @@ export type Room = {
 
 export type StoreState = {
   rooms: Record<string, Room>;
-  socketInfo: {
-    roomIds: Record<string, Set<string>>;
-    userIds: Record<string, Set<string>>;
-  };
+  socketInfo: Record<
+    string,
+    {
+      roomId: string;
+      userId: string;
+    }
+  >;
 };

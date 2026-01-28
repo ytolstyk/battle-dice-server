@@ -22,12 +22,16 @@ function responseRoom(room: Room, userId: string) {
 
 export const store = {
   state: {
-    socketInfo: { userIds: {}, roomIds: {} },
+    socketInfo: {},
     rooms: {},
   } as StoreState,
 
   addUserToRoom(user: ConnectingUser, roomId: string, socketId: string) {
     const room = this.state.rooms[roomId];
+    this.state.socketInfo[socketId] = {
+      roomId: roomId,
+      userId: user.id,
+    };
 
     if (!room) {
       this.state.rooms[roomId] = {
@@ -45,12 +49,6 @@ export const store = {
       this.state.rooms[roomId].participants.push(initUser(user));
     }
 
-    if (this.state.socketInfo.userIds[socketId]) {
-      this.state.socketInfo.userIds[socketId].add(user.id);
-    } else {
-      this.state.socketInfo.userIds[socketId] = new Set([user.id]);
-    }
-
     return responseRoom(this.state.rooms[roomId], user.id);
   },
 
@@ -63,35 +61,42 @@ export const store = {
       roomId
     ].participants.filter((participant) => participant.id !== userId);
 
-    this.state.socketInfo.userIds[socketId]?.delete(userId);
+    this.state.socketInfo[socketId] = {
+      userId,
+      roomId: "",
+    };
 
     return responseRoom(this.state.rooms[roomId], userId);
   },
 
   disconnectUser(socketId: string) {
-    const userIds = this.state.socketInfo.userIds[socketId];
-    const roomIds = this.state.socketInfo.roomIds[socketId];
+    const { userId, roomId } = this.state.socketInfo[socketId];
 
-    if (userIds && roomIds) {
-      roomIds.forEach((roomId) => {
-        const room = this.state.rooms[roomId];
-        if (room) {
-          room.participants = room.participants.filter(
-            (participant) => !userIds.has(participant.id)
-          );
+    if (userId && roomId) {
+      const room = this.state.rooms[roomId];
+
+      if (room) {
+        this.state.rooms[roomId].participants = room.participants.filter(
+          (participant) => participant.id !== userId,
+        );
+
+        delete this.state.socketInfo[socketId];
+
+        if (this.state.rooms[roomId].participants.length > 1) {
+          return { roomId, room };
         }
-      });
+
+        delete this.state.rooms[roomId];
+      }
     }
 
-    delete this.state.socketInfo.userIds[socketId];
-    delete this.state.socketInfo.roomIds[socketId];
+    return null;
   },
 
   updateDiceRules(roomId: string, userId: string, diceRules: string) {
     const room = this.state.rooms[roomId];
 
     if (room?.ownerId !== userId) {
-      // handle error
       logMessage("Non-owner tried to update dice rules");
       return responseRoom(room, userId);
     }
@@ -99,6 +104,11 @@ export const store = {
     if (room) {
       logMessage(`Updating room with dice rules: ${diceRules}`);
       this.state.rooms[roomId].diceRules = diceRules;
+
+      const newParticipants =
+        this.state.rooms[roomId].participants.map(initUser);
+
+      this.state.rooms[roomId].participants = newParticipants;
     }
 
     return responseRoom(this.state.rooms[roomId], userId);
@@ -109,7 +119,7 @@ export const store = {
 
     if (room) {
       room.participants.forEach((participant) => {
-        if (participant.id === userId) {
+        if (participant.id === userId && participant.status !== "hasRolled") {
           participant.status = status;
         }
       });
@@ -127,7 +137,23 @@ export const store = {
       room.participants.forEach((participant) => {
         if (participant.id === userId) {
           participant.roll = roll;
-          participant.status = "connected";
+          participant.status = "hasRolled";
+        }
+      });
+    }
+
+    this.state.rooms[roomId] = room;
+
+    return responseRoom(room, userId);
+  },
+
+  updateUserName(roomId: string, userId: string, userName: string) {
+    const room = this.state.rooms[roomId];
+
+    if (room) {
+      room.participants.forEach((u) => {
+        if (u.id === userId) {
+          u.name = userName;
         }
       });
     }
