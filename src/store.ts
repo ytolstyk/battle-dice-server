@@ -12,14 +12,6 @@ function initUser(user: ConnectingUser): User {
   };
 }
 
-function responseRoom(room: Room, userId: string) {
-  return {
-    ...room,
-    isOwner: room.ownerId === userId,
-    ownerId: "************",
-  };
-}
-
 export const store = {
   state: {
     socketInfo: {},
@@ -44,12 +36,12 @@ export const store = {
       const { participants } = room;
       const userAlreadyIn = participants.map((u) => u.id).includes(user.id);
 
-      if (userAlreadyIn) return responseRoom(room, user.id);
+      if (userAlreadyIn) return room;
 
       this.state.rooms[roomId].participants.push(initUser(user));
     }
 
-    return responseRoom(this.state.rooms[roomId], user.id);
+    return this.state.rooms[roomId];
   },
 
   removeUser(userId: string, roomId: string, socketId: string) {
@@ -66,7 +58,7 @@ export const store = {
       roomId: "",
     };
 
-    return responseRoom(this.state.rooms[roomId], userId);
+    return this.state.rooms[roomId];
   },
 
   disconnectUser(socketId: string) {
@@ -98,7 +90,7 @@ export const store = {
 
     if (room?.ownerId !== userId) {
       logMessage("Non-owner tried to update dice rules");
-      return responseRoom(room, userId);
+      return room;
     }
 
     if (room) {
@@ -111,7 +103,7 @@ export const store = {
       this.state.rooms[roomId].participants = newParticipants;
     }
 
-    return responseRoom(this.state.rooms[roomId], userId);
+    return this.state.rooms[roomId];
   },
 
   updateUserStatus(roomId: string, userId: string, status: User["status"]) {
@@ -127,7 +119,7 @@ export const store = {
 
     this.state.rooms[roomId] = room;
 
-    return responseRoom(room, userId);
+    return room;
   },
 
   updateUserRoll(roomId: string, userId: string, roll: Roll) {
@@ -144,7 +136,7 @@ export const store = {
 
     this.state.rooms[roomId] = room;
 
-    return responseRoom(room, userId);
+    return room;
   },
 
   updateUserName(roomId: string, userId: string, userName: string) {
@@ -160,7 +152,7 @@ export const store = {
 
     this.state.rooms[roomId] = room;
 
-    return responseRoom(room, userId);
+    return room;
   },
 
   pruneRooms() {

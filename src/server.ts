@@ -1,3 +1,4 @@
+import { createServer } from "http";
 import { Server } from "socket.io";
 import { socketHandler } from "./socketHandler";
 
@@ -7,12 +8,15 @@ const origin =
   process.env.NODE_ENV === "production"
     ? [
         "https://main.d2wj3ci2d6hgbv.amplifyapp.com",
+        "https://main.d2wj3ci2d6hgbv.amplifyapp.com/",
         "http://main.d2wj3ci2d6hgbv.amplifyapp.com:80",
         "https://main.d2wj3ci2d6hgbv.amplifyapp.com:433",
       ]
     : ["http://localhost:5173"];
 
-const io = new Server({
+const httpServer = createServer();
+
+const io = new Server(httpServer, {
   path: "/battle-dice/",
   serveClient: false,
   cors: {
@@ -21,6 +25,10 @@ const io = new Server({
   },
 });
 
+console.log("Accepting origins:");
+origin.forEach((val) => console.log(val));
+console.log("------------ end cors ------------");
+
 socketHandler(io);
 
-io.listen(PORT);
+httpServer.listen(PORT);

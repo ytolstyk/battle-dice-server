@@ -125,7 +125,7 @@ export const socketHandler = (
 
         io.to(roomId).emit("userNameUpdated", room);
 
-        logMessage(`Transmitted roll result to room ${roomId}`);
+        logMessage(`User name updated for user ID ${userId}: ${userName}`);
       };
 
       const disconnect = () => () => {
