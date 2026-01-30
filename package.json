@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node src/server.ts",
-    "build": "NODE_ENV=production npm install && tsc",
-    "serve": "NODE_ENV=production node dist/server.js"
+    "start": "PORT=8080 ts-node src/server.ts",
+    "build": "PORT=8080 NODE_ENV=production npm install && tsc",
+    "serve": "PORT=8080 NODE_ENV=production node dist/server.js"
   },
   "keywords": [],
   "author": "",
