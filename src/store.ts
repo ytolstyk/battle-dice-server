@@ -110,6 +110,22 @@ export const store = {
     return this.state.rooms[roomId];
   },
 
+  requestUserReroll(roomId: string, userId: string) {
+    const room = this.state.rooms[roomId];
+
+    if (room) {
+      room.participants.forEach((participant) => {
+        if (participant.id === userId && participant.status === "hasRolled") {
+          participant.status = "requestedReroll";
+        }
+      });
+
+      this.state.rooms[roomId] = room;
+    }
+
+    return room;
+  },
+
   updateUserStatus(roomId: string, userId: string, status: User["status"]) {
     const room = this.state.rooms[roomId];
 

@@ -8,6 +8,7 @@ import {
   validateUpdateDiceRules,
   validateRollDice,
   validateUpdateUserRollResult,
+  validateRequestReroll,
   validateUpdateUserName,
 } from "./validators";
 
@@ -181,6 +182,31 @@ export const socketHandler = (
         callback({ success: true });
       };
 
+      const requestReroll = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
+        if (!validateRequestReroll(payload)) {
+          logMessage("[requestReroll] invalid payload");
+          callback({ success: false, error: "invalid payload" });
+          return;
+        }
+        const { roomId, userId } = payload;
+
+        logMessage(`[requestReroll] roomId: ${roomId}, userId: ${userId}`);
+
+        const room = store.requestUserReroll(roomId, userId);
+
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
+        io.to(roomId).emit("rerollRequested", room);
+
+        logMessage(`User ${userId} requested reroll in room ${roomId}`);
+        callback({ success: true });
+      };
+
       const disconnect = () => {
         logMessage(`[disconnect] socketId: ${socket.id}`);
 
@@ -207,6 +233,8 @@ export const socketHandler = (
       socket.on("updateUserRollResult", updateUserRollResult);
 
       socket.on("updateUserName", updateUserName);
+
+      socket.on("requestReroll", requestReroll);
 
       socket.on("disconnect", disconnect);
     },
