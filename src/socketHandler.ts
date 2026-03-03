@@ -179,7 +179,7 @@ export const socketHandler = (
         callback({ success: true });
       };
 
-      const disconnect = () => () => {
+      const disconnect = () => {
         logMessage(`[disconnect] socketId: ${socket.id}`);
 
         const roomInfo = store.disconnectUser(socket.id);

@@ -62,7 +62,11 @@ export const store = {
   },
 
   disconnectUser(socketId: string) {
-    const { userId, roomId } = this.state.socketInfo[socketId];
+    const socketInfo = this.state.socketInfo[socketId];
+
+    if (!socketInfo) return null;
+
+    const { userId, roomId } = socketInfo;
 
     if (userId && roomId) {
       const room = this.state.rooms[roomId];
