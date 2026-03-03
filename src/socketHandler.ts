@@ -12,7 +12,9 @@ import {
 } from "./validators";
 
 function getCallback(fn: unknown): (response: SocketResponse) => void {
-  return typeof fn === "function" ? (fn as (r: SocketResponse) => void) : () => {};
+  return typeof fn === "function"
+    ? (fn as (r: SocketResponse) => void)
+    : () => {};
 }
 
 export const socketHandler = (

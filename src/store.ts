@@ -78,8 +78,8 @@ export const store = {
 
         delete this.state.socketInfo[socketId];
 
-        if (this.state.rooms[roomId].participants.length > 1) {
-          return { roomId, room };
+        if (this.state.rooms[roomId].participants.length > 0) {
+          return { roomId, room: this.state.rooms[roomId] };
         }
 
         delete this.state.rooms[roomId];
