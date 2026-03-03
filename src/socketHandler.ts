@@ -1,6 +1,7 @@
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { store } from "./store";
 import { logMessage } from "./logger";
+import { SocketResponse } from "./types";
 import {
   validateJoinRoom,
   validateLeaveRoom,
@@ -9,6 +10,10 @@ import {
   validateUpdateUserRollResult,
   validateUpdateUserName,
 } from "./validators";
+
+function getCallback(fn: unknown): (response: SocketResponse) => void {
+  return typeof fn === "function" ? (fn as (r: SocketResponse) => void) : () => {};
+}
 
 export const socketHandler = (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -22,9 +27,12 @@ export const socketHandler = (
     ) => {
       logMessage("[connection] a user connected");
 
-      const joinRoom = (payload: unknown) => {
+      const joinRoom = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateJoinRoom(payload)) {
           logMessage("[joinRoom] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, user } = payload;
@@ -40,11 +48,15 @@ export const socketHandler = (
         logMessage(`User ${user.name} joined room ${roomId}`);
 
         io.to(roomId).emit("roomUpdated", room);
+        callback({ success: true });
       };
 
-      const leaveRoom = (payload: unknown) => {
+      const leaveRoom = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateLeaveRoom(payload)) {
           logMessage("[leaveRoom] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, userId } = payload;
@@ -58,11 +70,15 @@ export const socketHandler = (
 
         io.to(roomId).emit("roomUpdated", room);
         socket.leave(roomId);
+        callback({ success: true });
       };
 
-      const updateDiceRules = (payload: unknown) => {
+      const updateDiceRules = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateUpdateDiceRules(payload)) {
           logMessage("[updateDiceRules] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, userId, diceRules } = payload;
@@ -73,14 +89,23 @@ export const socketHandler = (
 
         const room = store.updateDiceRules(roomId, userId, diceRules);
 
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
         io.to(roomId).emit("diceRulesUpdated", room);
 
         logMessage(`Dice rules updated in room ${roomId}`);
+        callback({ success: true });
       };
 
-      const rollDice = (payload: unknown) => {
+      const rollDice = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateRollDice(payload)) {
           logMessage("[rollDice] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, userId } = payload;
@@ -88,14 +113,24 @@ export const socketHandler = (
         logMessage(`[rollDice] roomId: ${roomId}, userId: ${userId}`);
 
         const room = store.updateUserStatus(roomId, userId, "rolling");
+
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
         io.to(roomId).emit("diceRolled", room);
 
         logMessage(`User ${userId} rolled dice in room ${roomId}`);
+        callback({ success: true });
       };
 
-      const updateUserRollResult = (payload: unknown) => {
+      const updateUserRollResult = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateUpdateUserRollResult(payload)) {
           logMessage("[updateUserRollResult] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, userId, rollResult } = payload;
@@ -106,14 +141,23 @@ export const socketHandler = (
 
         const room = store.updateUserRoll(roomId, userId, rollResult);
 
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
         io.to(roomId).emit("rollResult", room);
 
         logMessage(`Transmitted roll result to room ${roomId}`);
+        callback({ success: true });
       };
 
-      const updateUserName = (payload: unknown) => {
+      const updateUserName = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
         if (!validateUpdateUserName(payload)) {
           logMessage("[updateUserName] invalid payload");
+          callback({ success: false, error: "invalid payload" });
           return;
         }
         const { roomId, userId, userName } = payload;
@@ -124,9 +168,15 @@ export const socketHandler = (
 
         const room = store.updateUserName(roomId, userId, userName);
 
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
         io.to(roomId).emit("userNameUpdated", room);
 
         logMessage(`User name updated for user ID ${userId}: ${userName}`);
+        callback({ success: true });
       };
 
       const disconnect = () => () => {

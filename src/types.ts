@@ -25,6 +25,11 @@ export type Room = {
   participants: User[];
 };
 
+export type SocketResponse = {
+  success: boolean;
+  error?: string;
+};
+
 export type StoreState = {
   rooms: Record<string, Room>;
   socketInfo: Record<
