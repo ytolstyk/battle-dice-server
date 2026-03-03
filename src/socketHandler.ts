@@ -8,6 +8,8 @@ import {
   validateUpdateDiceRules,
   validateRollDice,
   validateUpdateUserRollResult,
+  validateRerollAction,
+  validateResolveReroll,
   validateRequestReroll,
   validateUpdateUserName,
 } from "./validators";
@@ -182,6 +184,64 @@ export const socketHandler = (
         callback({ success: true });
       };
 
+      const approveReroll = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
+        if (!validateRerollAction(payload)) {
+          logMessage("[approveReroll] invalid payload");
+          callback({ success: false, error: "invalid payload" });
+          return;
+        }
+        const { roomId, userId, targetUserId } = payload;
+
+        logMessage(
+          `[approveReroll] roomId: ${roomId}, userId: ${userId}, targetUserId: ${targetUserId}`,
+        );
+
+        const room = store.approveReroll(roomId, targetUserId);
+
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
+        io.to(roomId).emit("rerollResolved", room);
+
+        logMessage(
+          `Reroll approved for user ${targetUserId} in room ${roomId}`,
+        );
+        callback({ success: true });
+      };
+
+      const declineReroll = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
+        if (!validateRerollAction(payload)) {
+          logMessage("[declineReroll] invalid payload");
+          callback({ success: false, error: "invalid payload" });
+          return;
+        }
+        const { roomId, userId, targetUserId } = payload;
+
+        logMessage(
+          `[declineReroll] roomId: ${roomId}, userId: ${userId}, targetUserId: ${targetUserId}`,
+        );
+
+        const room = store.declineReroll(roomId, targetUserId);
+
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
+        io.to(roomId).emit("rerollResolved", room);
+
+        logMessage(
+          `Reroll declined for user ${targetUserId} in room ${roomId}`,
+        );
+        callback({ success: true });
+      };
+
       const requestReroll = (payload: unknown, callbackFn: unknown) => {
         const callback = getCallback(callbackFn);
 
@@ -233,6 +293,10 @@ export const socketHandler = (
       socket.on("updateUserRollResult", updateUserRollResult);
 
       socket.on("updateUserName", updateUserName);
+
+      socket.on("approveReroll", approveReroll);
+
+      socket.on("declineReroll", declineReroll);
 
       socket.on("requestReroll", requestReroll);
 

@@ -23,7 +23,9 @@ function isConnectingUser(value: unknown): value is ConnectingUser {
 function isDiceResult(value: unknown): value is DiceResult {
   if (typeof value !== "object" || value === null) return false;
   const obj = value as Record<string, unknown>;
-  return VALID_DIE_TYPES.has(obj.dieType as string) && typeof obj.value === "number";
+  return (
+    VALID_DIE_TYPES.has(obj.dieType as string) && typeof obj.value === "number"
+  );
 }
 
 function isRoll(value: unknown): value is Roll {
@@ -81,6 +83,30 @@ export function validateUpdateUserRollResult(
     isNonEmptyString(obj.roomId) &&
     isNonEmptyString(obj.userId) &&
     isRoll(obj.rollResult)
+  );
+}
+
+export function validateRerollAction(
+  payload: unknown,
+): payload is { roomId: string; userId: string; targetUserId: string } {
+  if (typeof payload !== "object" || payload === null) return false;
+  const obj = payload as Record<string, unknown>;
+  return (
+    isNonEmptyString(obj.roomId) &&
+    isNonEmptyString(obj.userId) &&
+    isNonEmptyString(obj.targetUserId)
+  );
+}
+
+export function validateResolveReroll(
+  payload: unknown,
+): payload is { roomId: string; userId: string; targetUserId: string } {
+  if (typeof payload !== "object" || payload === null) return false;
+  const obj = payload as Record<string, unknown>;
+  return (
+    isNonEmptyString(obj.roomId) &&
+    isNonEmptyString(obj.userId) &&
+    isNonEmptyString(obj.targetUserId)
   );
 }
 

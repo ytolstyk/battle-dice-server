@@ -126,6 +126,44 @@ export const store = {
     return room;
   },
 
+  approveReroll(roomId: string, targetUserId: string) {
+    const room = this.state.rooms[roomId];
+
+    if (room) {
+      room.participants.forEach((participant) => {
+        if (
+          participant.id === targetUserId &&
+          participant.status === "requestedReroll"
+        ) {
+          participant.status = "connected";
+        }
+      });
+
+      this.state.rooms[roomId] = room;
+    }
+
+    return room;
+  },
+
+  declineReroll(roomId: string, targetUserId: string) {
+    const room = this.state.rooms[roomId];
+
+    if (room) {
+      room.participants.forEach((participant) => {
+        if (
+          participant.id === targetUserId &&
+          participant.status === "requestedReroll"
+        ) {
+          participant.status = "rerollDenied";
+        }
+      });
+
+      this.state.rooms[roomId] = room;
+    }
+
+    return room;
+  },
+
   updateUserStatus(roomId: string, userId: string, status: User["status"]) {
     const room = this.state.rooms[roomId];
 
