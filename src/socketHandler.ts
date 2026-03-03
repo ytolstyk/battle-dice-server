@@ -1,7 +1,14 @@
 import { DefaultEventsMap, Server, Socket } from "socket.io";
 import { store } from "./store";
-import { ConnectingUser, Roll } from "./types";
 import { logMessage } from "./logger";
+import {
+  validateJoinRoom,
+  validateLeaveRoom,
+  validateUpdateDiceRules,
+  validateRollDice,
+  validateUpdateUserRollResult,
+  validateUpdateUserName,
+} from "./validators";
 
 export const socketHandler = (
   io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
@@ -15,13 +22,13 @@ export const socketHandler = (
     ) => {
       logMessage("[connection] a user connected");
 
-      const joinRoom = ({
-        roomId,
-        user,
-      }: {
-        roomId: string;
-        user: ConnectingUser;
-      }) => {
+      const joinRoom = (payload: unknown) => {
+        if (!validateJoinRoom(payload)) {
+          logMessage("[joinRoom] invalid payload");
+          return;
+        }
+        const { roomId, user } = payload;
+
         logMessage(
           `[joinRoom] roomId: ${roomId}, user: ${user.id} ${user.name}`,
         );
@@ -35,13 +42,13 @@ export const socketHandler = (
         io.to(roomId).emit("roomUpdated", room);
       };
 
-      const leaveRoom = ({
-        roomId,
-        userId,
-      }: {
-        roomId: string;
-        userId: string;
-      }) => {
+      const leaveRoom = (payload: unknown) => {
+        if (!validateLeaveRoom(payload)) {
+          logMessage("[leaveRoom] invalid payload");
+          return;
+        }
+        const { roomId, userId } = payload;
+
         logMessage(`[leaveRoom] roomId: ${roomId}, userId: ${userId}`);
 
         const room = store.removeUser(userId, roomId, socket.id);
@@ -53,15 +60,13 @@ export const socketHandler = (
         socket.leave(roomId);
       };
 
-      const updateDiceRules = ({
-        roomId,
-        userId,
-        diceRules,
-      }: {
-        roomId: string;
-        userId: string;
-        diceRules: string;
-      }) => {
+      const updateDiceRules = (payload: unknown) => {
+        if (!validateUpdateDiceRules(payload)) {
+          logMessage("[updateDiceRules] invalid payload");
+          return;
+        }
+        const { roomId, userId, diceRules } = payload;
+
         logMessage(
           `[updateDiceRules] roomId: ${roomId}, userId: ${userId}, diceRules: ${diceRules}`,
         );
@@ -73,13 +78,13 @@ export const socketHandler = (
         logMessage(`Dice rules updated in room ${roomId}`);
       };
 
-      const rollDice = ({
-        roomId,
-        userId,
-      }: {
-        roomId: string;
-        userId: string;
-      }) => {
+      const rollDice = (payload: unknown) => {
+        if (!validateRollDice(payload)) {
+          logMessage("[rollDice] invalid payload");
+          return;
+        }
+        const { roomId, userId } = payload;
+
         logMessage(`[rollDice] roomId: ${roomId}, userId: ${userId}`);
 
         const room = store.updateUserStatus(roomId, userId, "rolling");
@@ -88,15 +93,13 @@ export const socketHandler = (
         logMessage(`User ${userId} rolled dice in room ${roomId}`);
       };
 
-      const updateUserRollResult = ({
-        roomId,
-        userId,
-        rollResult,
-      }: {
-        roomId: string;
-        userId: string;
-        rollResult: Roll;
-      }) => {
+      const updateUserRollResult = (payload: unknown) => {
+        if (!validateUpdateUserRollResult(payload)) {
+          logMessage("[updateUserRollResult] invalid payload");
+          return;
+        }
+        const { roomId, userId, rollResult } = payload;
+
         logMessage(
           `[updateUserRollResult] roomId: ${roomId}, userId: ${userId}, rollResult: ${rollResult}`,
         );
@@ -108,15 +111,13 @@ export const socketHandler = (
         logMessage(`Transmitted roll result to room ${roomId}`);
       };
 
-      const updateUserName = ({
-        roomId,
-        userId,
-        userName,
-      }: {
-        roomId: string;
-        userId: string;
-        userName: string;
-      }) => {
+      const updateUserName = (payload: unknown) => {
+        if (!validateUpdateUserName(payload)) {
+          logMessage("[updateUserName] invalid payload");
+          return;
+        }
+        const { roomId, userId, userName } = payload;
+
         logMessage(
           `[updateUserName] roomId: ${roomId}, userId: ${userId}, userName: ${userName}`,
         );
