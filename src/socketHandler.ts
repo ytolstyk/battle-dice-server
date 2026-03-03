@@ -9,6 +9,7 @@ import {
   validateRollDice,
   validateUpdateUserRollResult,
   validateRerollAction,
+  validateRoomReset,
   validateResolveReroll,
   validateRequestReroll,
   validateUpdateUserName,
@@ -267,6 +268,31 @@ export const socketHandler = (
         callback({ success: true });
       };
 
+      const resetRoom = (payload: unknown, callbackFn: unknown) => {
+        const callback = getCallback(callbackFn);
+
+        if (!validateRoomReset(payload)) {
+          logMessage("[resetRoom] invalid payload");
+          callback({ success: false, error: "invalid payload" });
+          return;
+        }
+        const { roomId, userId } = payload;
+
+        logMessage(`[resetRoom] roomId: ${roomId}`);
+
+        const room = store.resetRoom(roomId, userId);
+
+        if (!room) {
+          callback({ success: false, error: "room not found" });
+          return;
+        }
+
+        io.to(roomId).emit("roomUpdated", room);
+
+        logMessage(`Room ${roomId} reset`);
+        callback({ success: true });
+      };
+
       const disconnect = () => {
         logMessage(`[disconnect] socketId: ${socket.id}`);
 
@@ -299,6 +325,8 @@ export const socketHandler = (
       socket.on("declineReroll", declineReroll);
 
       socket.on("requestReroll", requestReroll);
+
+      socket.on("resetRoom", resetRoom);
 
       socket.on("disconnect", disconnect);
     },

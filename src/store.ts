@@ -164,6 +164,29 @@ export const store = {
     return room;
   },
 
+  resetRoom(roomId: string, userId: string) {
+    const room = this.state.rooms[roomId];
+
+    if (room?.ownerId !== userId) {
+      logMessage("Non-owner tried to reset room");
+      return room;
+    }
+
+    if (room) {
+      room.participants.forEach((participant) => {
+        participant.status = "connected";
+        participant.roll = {
+          diceResults: [],
+          total: 0,
+        };
+      });
+
+      this.state.rooms[roomId] = room;
+    }
+
+    return room;
+  },
+
   updateUserStatus(roomId: string, userId: string, status: User["status"]) {
     const room = this.state.rooms[roomId];
 

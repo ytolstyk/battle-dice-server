@@ -110,6 +110,14 @@ export function validateResolveReroll(
   );
 }
 
+export function validateRoomReset(
+  payload: unknown,
+): payload is { roomId: string; userId: string } {
+  if (typeof payload !== "object" || payload === null) return false;
+  const obj = payload as Record<string, unknown>;
+  return isNonEmptyString(obj.roomId) && isNonEmptyString(obj.userId);
+}
+
 export function validateRequestReroll(
   payload: unknown,
 ): payload is { roomId: string; userId: string } {
