@@ -92,7 +92,9 @@ export const store = {
   updateDiceRules(roomId: string, userId: string, diceRules: string) {
     const room = this.state.rooms[roomId];
 
-    if (room?.ownerId !== userId) {
+    if (!room) return undefined;
+
+    if (room.ownerId !== userId) {
       logMessage("Non-owner tried to update dice rules");
       return room;
     }
@@ -126,40 +128,50 @@ export const store = {
     return room;
   },
 
-  approveReroll(roomId: string, targetUserId: string) {
+  approveReroll(roomId: string, userId: string, targetUserId: string) {
     const room = this.state.rooms[roomId];
 
-    if (room) {
-      room.participants.forEach((participant) => {
-        if (
-          participant.id === targetUserId &&
-          participant.status === "requestedReroll"
-        ) {
-          participant.status = "connected";
-        }
-      });
+    if (!room) return undefined;
 
-      this.state.rooms[roomId] = room;
+    if (room.ownerId !== userId) {
+      logMessage("Non-owner tried to approve reroll");
+      return room;
     }
+
+    room.participants.forEach((participant) => {
+      if (
+        participant.id === targetUserId &&
+        participant.status === "requestedReroll"
+      ) {
+        participant.status = "connected";
+      }
+    });
+
+    this.state.rooms[roomId] = room;
 
     return room;
   },
 
-  declineReroll(roomId: string, targetUserId: string) {
+  declineReroll(roomId: string, userId: string, targetUserId: string) {
     const room = this.state.rooms[roomId];
 
-    if (room) {
-      room.participants.forEach((participant) => {
-        if (
-          participant.id === targetUserId &&
-          participant.status === "requestedReroll"
-        ) {
-          participant.status = "rerollDenied";
-        }
-      });
+    if (!room) return undefined;
 
-      this.state.rooms[roomId] = room;
+    if (room.ownerId !== userId) {
+      logMessage("Non-owner tried to decline reroll");
+      return room;
     }
+
+    room.participants.forEach((participant) => {
+      if (
+        participant.id === targetUserId &&
+        participant.status === "requestedReroll"
+      ) {
+        participant.status = "rerollDenied";
+      }
+    });
+
+    this.state.rooms[roomId] = room;
 
     return room;
   },
@@ -167,7 +179,9 @@ export const store = {
   resetRoom(roomId: string, userId: string) {
     const room = this.state.rooms[roomId];
 
-    if (room?.ownerId !== userId) {
+    if (!room) return undefined;
+
+    if (room.ownerId !== userId) {
       logMessage("Non-owner tried to reset room");
       return room;
     }
@@ -196,9 +210,9 @@ export const store = {
           participant.status = status;
         }
       });
-    }
 
-    this.state.rooms[roomId] = room;
+      this.state.rooms[roomId] = room;
+    }
 
     return room;
   },
@@ -213,9 +227,9 @@ export const store = {
           participant.status = "hasRolled";
         }
       });
-    }
 
-    this.state.rooms[roomId] = room;
+      this.state.rooms[roomId] = room;
+    }
 
     return room;
   },
@@ -229,11 +243,11 @@ export const store = {
           u.name = userName;
         }
       });
+
+      this.state.rooms[roomId] = room;
     }
 
-    this.state.rooms[roomId] = room;
-
-    return room;
+    return this.state.rooms[roomId];
   },
 
   pruneRooms() {

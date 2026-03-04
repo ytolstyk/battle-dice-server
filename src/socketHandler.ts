@@ -10,7 +10,6 @@ import {
   validateUpdateUserRollResult,
   validateRerollAction,
   validateRoomReset,
-  validateResolveReroll,
   validateRequestReroll,
   validateUpdateUserName,
 } from "./validators";
@@ -199,7 +198,7 @@ export const socketHandler = (
           `[approveReroll] roomId: ${roomId}, userId: ${userId}, targetUserId: ${targetUserId}`,
         );
 
-        const room = store.approveReroll(roomId, targetUserId);
+        const room = store.approveReroll(roomId, userId, targetUserId);
 
         if (!room) {
           callback({ success: false, error: "room not found" });
@@ -228,7 +227,7 @@ export const socketHandler = (
           `[declineReroll] roomId: ${roomId}, userId: ${userId}, targetUserId: ${targetUserId}`,
         );
 
-        const room = store.declineReroll(roomId, targetUserId);
+        const room = store.declineReroll(roomId, userId, targetUserId);
 
         if (!room) {
           callback({ success: false, error: "room not found" });
