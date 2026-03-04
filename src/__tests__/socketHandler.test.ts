@@ -13,7 +13,7 @@ const sampleRoll: Roll = {
 };
 
 function createMocks() {
-  const handlers: Record<string, Function> = {};
+  const handlers: Record<string, (...args: unknown[]) => void> = {};
   const emitted: Array<{ event: string; data: unknown }> = [];
 
   const mockTo = {
@@ -24,7 +24,7 @@ function createMocks() {
 
   const mockSocket = {
     id: socketId,
-    on: jest.fn((event: string, handler: Function) => {
+    on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
       handlers[event] = handler;
     }),
     join: jest.fn(),
@@ -32,12 +32,13 @@ function createMocks() {
   };
 
   const mockIo = {
-    on: jest.fn((event: string, handler: Function) => {
+    on: jest.fn((event: string, handler: (...args: unknown[]) => void) => {
       if (event === "connection") handler(mockSocket);
     }),
     to: jest.fn(() => mockTo),
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   socketHandler(mockIo as any);
 
   return { handlers, emitted, mockSocket, mockTo, mockIo };

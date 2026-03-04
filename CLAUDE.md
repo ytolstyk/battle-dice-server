@@ -37,6 +37,7 @@ The first user to join a room becomes its owner. Only the owner can call `update
 Before finishing any task, run the following commands:
 
 1. **Test:** `npm run test`
-2. **Types:** `npm run type-check`
+2. **Lint:** `npm run lint`
+3. **Types:** `npm run type-check`
 
 If any command fails, fix the issue before submitting.

@@ -1,5 +1,5 @@
 import { logMessage } from "./logger";
-import { ConnectingUser, Roll, Room, StoreState, User } from "./types";
+import { ConnectingUser, Roll, StoreState, User } from "./types";
 
 function initUser(user: ConnectingUser): User {
   return {
