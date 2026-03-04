@@ -7,7 +7,10 @@ const user2: ConnectingUser = { id: "user2", name: "Bob" };
 const roomId = "room1";
 const socketId = "test-socket-id";
 
-const sampleRoll: Roll = { diceResults: [{ dieType: "d6", value: 4 }], total: 4 };
+const sampleRoll: Roll = {
+  diceResults: [{ dieType: "d6", value: 4 }],
+  total: 4,
+};
 
 function createMocks() {
   const handlers: Record<string, Function> = {};
@@ -53,7 +56,9 @@ describe("joinRoom", () => {
     handlers["joinRoom"]({ roomId, user: user1 }, callback);
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "roomUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "roomUpdated" }),
+    );
     expect(mockSocket.join).toHaveBeenCalledWith(roomId);
   });
 
@@ -63,7 +68,10 @@ describe("joinRoom", () => {
 
     handlers["joinRoom"]({ roomId }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -77,7 +85,9 @@ describe("leaveRoom", () => {
     handlers["leaveRoom"]({ roomId, userId: user1.id }, callback);
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "roomUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "roomUpdated" }),
+    );
     expect(mockSocket.leave).toHaveBeenCalledWith(roomId);
   });
 
@@ -87,7 +97,10 @@ describe("leaveRoom", () => {
 
     handlers["leaveRoom"]({ roomId }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -97,10 +110,15 @@ describe("updateDiceRules", () => {
     const { handlers, emitted } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateDiceRules"]({ roomId, userId: user1.id, diceRules: "2d6" }, callback);
+    handlers["updateDiceRules"](
+      { roomId, userId: user1.id, diceRules: "2d6" },
+      callback,
+    );
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "diceRulesUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "diceRulesUpdated" }),
+    );
   });
 
   it("calls back with error on invalid payload", () => {
@@ -109,16 +127,25 @@ describe("updateDiceRules", () => {
 
     handlers["updateDiceRules"]({ roomId, userId: user1.id }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 
   it("calls back with error when room not found", () => {
     const { handlers } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateDiceRules"]({ roomId, userId: user1.id, diceRules: "2d6" }, callback);
+    handlers["updateDiceRules"](
+      { roomId, userId: user1.id, diceRules: "2d6" },
+      callback,
+    );
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "room not found" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "room not found",
+    });
   });
 });
 
@@ -131,7 +158,9 @@ describe("rollDice", () => {
     handlers["rollDice"]({ roomId, userId: user1.id }, callback);
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "diceRolled" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "diceRolled" }),
+    );
     expect(store.state.rooms[roomId].participants[0].status).toBe("rolling");
   });
 
@@ -141,7 +170,10 @@ describe("rollDice", () => {
 
     handlers["rollDice"]({ roomId }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 
   it("calls back with error when room not found", () => {
@@ -150,7 +182,10 @@ describe("rollDice", () => {
 
     handlers["rollDice"]({ roomId, userId: user1.id }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "room not found" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "room not found",
+    });
   });
 });
 
@@ -160,10 +195,15 @@ describe("updateUserRollResult", () => {
     const { handlers, emitted } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateUserRollResult"]({ roomId, userId: user1.id, rollResult: sampleRoll }, callback);
+    handlers["updateUserRollResult"](
+      { roomId, userId: user1.id, rollResult: sampleRoll },
+      callback,
+    );
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "rollResult" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "rollResult" }),
+    );
     expect(store.state.rooms[roomId].participants[0].roll).toEqual(sampleRoll);
   });
 
@@ -171,9 +211,19 @@ describe("updateUserRollResult", () => {
     const { handlers } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateUserRollResult"]({ roomId, userId: user1.id, rollResult: { diceResults: [{ dieType: "d999", value: 4 }], total: 4 } }, callback);
+    handlers["updateUserRollResult"](
+      {
+        roomId,
+        userId: user1.id,
+        rollResult: { diceResults: [{ dieType: "d999", value: 4 }], total: 4 },
+      },
+      callback,
+    );
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -183,10 +233,15 @@ describe("updateUserName", () => {
     const { handlers, emitted } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateUserName"]({ roomId, userId: user1.id, userName: "Alicia" }, callback);
+    handlers["updateUserName"](
+      { roomId, userId: user1.id, userName: "Alicia" },
+      callback,
+    );
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "userNameUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "userNameUpdated" }),
+    );
     expect(store.state.rooms[roomId].participants[0].name).toBe("Alicia");
   });
 
@@ -194,9 +249,15 @@ describe("updateUserName", () => {
     const { handlers } = createMocks();
     const callback = jest.fn();
 
-    handlers["updateUserName"]({ roomId, userId: user1.id, userName: "" }, callback);
+    handlers["updateUserName"](
+      { roomId, userId: user1.id, userName: "" },
+      callback,
+    );
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -210,8 +271,12 @@ describe("requestReroll", () => {
     handlers["requestReroll"]({ roomId, userId: user1.id }, callback);
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "rerollRequested" }));
-    expect(store.state.rooms[roomId].participants[0].status).toBe("requestedReroll");
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "rerollRequested" }),
+    );
+    expect(store.state.rooms[roomId].participants[0].status).toBe(
+      "requestedReroll",
+    );
   });
 
   it("calls back with error on invalid payload", () => {
@@ -220,7 +285,10 @@ describe("requestReroll", () => {
 
     handlers["requestReroll"]({ roomId }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -233,11 +301,18 @@ describe("approveReroll", () => {
     const { handlers, emitted } = createMocks();
     const callback = jest.fn();
 
-    handlers["approveReroll"]({ roomId, userId: user1.id, targetUserId: user2.id }, callback);
+    handlers["approveReroll"](
+      { roomId, userId: user1.id, targetUserId: user2.id },
+      callback,
+    );
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "rerollResolved" }));
-    const target = store.state.rooms[roomId].participants.find((p) => p.id === user2.id);
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "rerollResolved" }),
+    );
+    const target = store.state.rooms[roomId].participants.find(
+      (p) => p.id === user2.id,
+    );
     expect(target!.status).toBe("connected");
   });
 
@@ -247,7 +322,10 @@ describe("approveReroll", () => {
 
     handlers["approveReroll"]({ roomId, userId: user1.id }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -260,11 +338,18 @@ describe("declineReroll", () => {
     const { handlers, emitted } = createMocks();
     const callback = jest.fn();
 
-    handlers["declineReroll"]({ roomId, userId: user1.id, targetUserId: user2.id }, callback);
+    handlers["declineReroll"](
+      { roomId, userId: user1.id, targetUserId: user2.id },
+      callback,
+    );
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "rerollResolved" }));
-    const target = store.state.rooms[roomId].participants.find((p) => p.id === user2.id);
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "rerollResolved" }),
+    );
+    const target = store.state.rooms[roomId].participants.find(
+      (p) => p.id === user2.id,
+    );
     expect(target!.status).toBe("rerollDenied");
   });
 
@@ -274,7 +359,10 @@ describe("declineReroll", () => {
 
     handlers["declineReroll"]({ roomId, userId: user1.id }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 });
 
@@ -290,7 +378,9 @@ describe("resetRoom", () => {
     handlers["resetRoom"]({ roomId, userId: user1.id }, callback);
 
     expect(callback).toHaveBeenCalledWith({ success: true });
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "roomUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "roomUpdated" }),
+    );
     store.state.rooms[roomId].participants.forEach((p) => {
       expect(p.status).toBe("connected");
       expect(p.roll).toEqual({ diceResults: [], total: 0 });
@@ -303,7 +393,10 @@ describe("resetRoom", () => {
 
     handlers["resetRoom"]({ roomId }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "invalid payload" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "invalid payload",
+    });
   });
 
   it("calls back with error when room not found", () => {
@@ -312,7 +405,10 @@ describe("resetRoom", () => {
 
     handlers["resetRoom"]({ roomId, userId: user1.id }, callback);
 
-    expect(callback).toHaveBeenCalledWith({ success: false, error: "room not found" });
+    expect(callback).toHaveBeenCalledWith({
+      success: false,
+      error: "room not found",
+    });
   });
 });
 
@@ -324,7 +420,9 @@ describe("disconnect", () => {
 
     handlers["disconnect"]();
 
-    expect(emitted).toContainEqual(expect.objectContaining({ event: "roomUpdated" }));
+    expect(emitted).toContainEqual(
+      expect.objectContaining({ event: "roomUpdated" }),
+    );
     expect(store.state.rooms[roomId].participants).toHaveLength(1);
   });
 
