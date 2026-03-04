@@ -31,3 +31,12 @@ The first user to join a room becomes its owner. Only the owner can call `update
 
 - Production: `https://main.d2wj3ci2d6hgbv.amplifyapp.com`
 - Development: `http://localhost:5173`
+
+### Validations
+
+Before finishing any task, run the following commands:
+
+1. **Test:** `npm run test`
+2. **Types:** `npm run type-check`
+
+If any command fails, fix the issue before submitting.
