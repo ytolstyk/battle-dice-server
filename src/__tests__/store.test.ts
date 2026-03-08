@@ -177,14 +177,14 @@ describe("approveReroll", () => {
     store.addUserToRoom(user1, roomId, socketId1);
     store.updateUserRoll(roomId, user1.id, sampleRoll);
     store.requestUserReroll(roomId, user1.id);
-    store.approveReroll(roomId, user1.id);
+    store.approveReroll(roomId, user1.id, user1.id);
     expect(store.state.rooms[roomId].participants[0].status).toBe("connected");
   });
 
   it("does not affect a user who has not requested a reroll", () => {
     store.addUserToRoom(user1, roomId, socketId1);
     store.updateUserRoll(roomId, user1.id, sampleRoll);
-    store.approveReroll(roomId, user1.id);
+    store.approveReroll(roomId, user1.id, user1.id);
     expect(store.state.rooms[roomId].participants[0].status).toBe("hasRolled");
   });
 });
@@ -194,14 +194,14 @@ describe("declineReroll", () => {
     store.addUserToRoom(user1, roomId, socketId1);
     store.updateUserRoll(roomId, user1.id, sampleRoll);
     store.requestUserReroll(roomId, user1.id);
-    store.declineReroll(roomId, user1.id);
+    store.declineReroll(roomId, user1.id, user1.id);
     expect(store.state.rooms[roomId].participants[0].status).toBe("rerollDenied");
   });
 
   it("does not affect a user who has not requested a reroll", () => {
     store.addUserToRoom(user1, roomId, socketId1);
     store.updateUserRoll(roomId, user1.id, sampleRoll);
-    store.declineReroll(roomId, user1.id);
+    store.declineReroll(roomId, user1.id, user1.id);
     expect(store.state.rooms[roomId].participants[0].status).toBe("hasRolled");
   });
 });

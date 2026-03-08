@@ -4,10 +4,7 @@ module.exports = {
   testMatch: ["**/__tests__/**/*.test.ts"],
   globals: {
     "ts-jest": {
-      tsconfig: {
-        lib: ["es2020"],
-        types: ["jest", "node"],
-      },
+      tsconfig: "./tsconfig.json",
     },
   },
 };
