@@ -7,7 +7,8 @@
       "Bash(npx jest:*)",
       "Bash(npm run:*)",
       "Bash(rtk lint:*)",
-      "Bash(rtk test:*)"
+      "Bash(rtk test:*)",
+      "Bash(rtk tsc:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
