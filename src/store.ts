@@ -29,6 +29,7 @@ export const store = {
       this.state.rooms[roomId] = {
         id: roomId,
         ownerId: user.id,
+        originalOwnerId: user.id,
         diceRules: "",
         participants: [initUser(user)],
       };
@@ -39,6 +40,10 @@ export const store = {
       if (userAlreadyIn) return room;
 
       this.state.rooms[roomId].participants.push(initUser(user));
+
+      if (room.originalOwnerId === user.id) {
+        this.state.rooms[roomId].ownerId = user.id;
+      }
     }
 
     return this.state.rooms[roomId];
@@ -52,6 +57,14 @@ export const store = {
     this.state.rooms[roomId].participants = this.state.rooms[
       roomId
     ].participants.filter((participant) => participant.id !== userId);
+
+    if (
+      this.state.rooms[roomId].ownerId === userId &&
+      this.state.rooms[roomId].participants.length > 0
+    ) {
+      this.state.rooms[roomId].ownerId =
+        this.state.rooms[roomId].participants[0].id;
+    }
 
     this.state.socketInfo[socketId] = {
       userId,
@@ -79,6 +92,10 @@ export const store = {
         delete this.state.socketInfo[socketId];
 
         if (this.state.rooms[roomId].participants.length > 0) {
+          if (room.ownerId === userId) {
+            this.state.rooms[roomId].ownerId =
+              this.state.rooms[roomId].participants[0].id;
+          }
           return { roomId, room: this.state.rooms[roomId] };
         }
 

@@ -31,7 +31,7 @@ const origin =
         "http://www.dicebattles.com:80",
         "https://www.dicebattles.com:433",
       ]
-    : ["http://localhost:5173"];
+    : ["http://localhost:5173", "http://localhost:5174"];
 
 const httpServer = createServer((_, res) => {
   res.statusCode = 200;

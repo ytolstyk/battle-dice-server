@@ -32,6 +32,15 @@ describe("addUserToRoom", () => {
     expect(room.ownerId).toBe(user1.id);
   });
 
+  it("restores original owner when they rejoin", () => {
+    store.addUserToRoom(user1, roomId, socketId1);
+    store.addUserToRoom(user2, roomId, socketId2);
+    store.removeUser(user1.id, roomId, socketId1);
+    expect(store.state.rooms[roomId].ownerId).toBe(user2.id);
+    const room = store.addUserToRoom(user1, roomId, socketId1);
+    expect(room.ownerId).toBe(user1.id);
+  });
+
   it("does not duplicate a user already in the room", () => {
     store.addUserToRoom(user1, roomId, socketId1);
     const room = store.addUserToRoom(user1, roomId, socketId1);
@@ -112,7 +121,7 @@ describe("updateDiceRules", () => {
 
   it("does not update dice rules for a non-owner", () => {
     const room = store.updateDiceRules(roomId, user2.id, "2d6");
-    expect(room!.diceRules).toBe("");
+    expect(room!.diceRules).toBe("1d6 + 1d8 + 5");
   });
 });
 

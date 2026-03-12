@@ -27,6 +27,7 @@ export type User = ConnectingUser & {
 export type Room = {
   id: string;
   ownerId: string;
+  originalOwnerId: string;
   diceRules: string;
   participants: User[];
 };

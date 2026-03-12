@@ -5,7 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 - `npm start` — Run dev server on port 8080 (`ts-node src/server.ts`)
-- `npm run build` — Compile TypeScript to `dist/` (`tsc`)
+- `rtk err npm run build` — Compile TypeScript to `dist/`
+- `rtk lint` - Run lint (`eslint`)
+- `rtk tsc` - Type check (`tsc`)
 - `npm run serve` — Run compiled production server from `dist/server.js`
 
 No lint or test commands are configured.
@@ -36,8 +38,9 @@ The first user to join a room becomes its owner. Only the owner can call `update
 
 Before finishing any task, run the following commands:
 
-1. **Test:** `npm run test`
-2. **Lint:** `npm run lint`
-3. **Types:** `npm run type-check`
+1. **Lint** `rtk lint`
+2. **Types** `rtk tsc`
+3. **Build** `rtk err npm run build`
+4. **Test** `rtk test npm run test`
 
 If any command fails, fix the issue before submitting.
